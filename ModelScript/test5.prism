@@ -1,0 +1,101 @@
+mdp
+
+const int num_robots = 2
+;const int num_tasks = 2
+;const int grid_size = 10
+;const int max_grid_id = 9
+;
+module robot0
+    
+    	R0Lock : bool; // lock for clock sync
+    	x0 : [0..max_grid_id] init 0; // location variables
+    	y0 : [0..max_grid_id] init 0;
+
+    	[release] R0Lock = true -> (R0Lock'=false); // release lock according to the sync module
+
+    	// movement commands
+    	[R0MoveLeft] !R0Lock & x0>0 -> (x0'=x0-1) & (R0Lock' = true);
+    	[R0MoveRight] !R0Lock & x0<max_grid_id-> (x0'=x0+1) & (R0Lock' = true);
+    	[R0MoveUp] !R0Lock & y0<max_grid_id -> (y0'=y0+1) & (R0Lock' = true);
+    	[R0MoveDown] !R0Lock & y0>0 -> (y0'=y0-1) & (R0Lock' = true);
+    
+    	//complete tasks:
+	[T0Complete] !R0Lock & T0Active=true & x0=tx0 & y0=ty0-> (R0Lock' = true);
+	[T1Complete] !R0Lock & T1Active=true & x0=tx1 & y0=ty1-> (R0Lock' = true);
+
+	// wait
+    	[R0Wait] !R0Lock -> (R0Lock' = true); //do nothing
+    
+    endmodule
+
+
+module robot1
+    
+    	R1Lock : bool; // lock for clock sync
+    	x1 : [0..max_grid_id] init 0; // location variables
+    	y1 : [0..max_grid_id] init 0;
+
+    	[release] R1Lock = true -> (R1Lock'=false); // release lock according to the sync module
+
+    	// movement commands
+    	[R1MoveLeft] !R1Lock & x1>0 -> (x1'=x1-1) & (R1Lock' = true);
+    	[R1MoveRight] !R1Lock & x1<max_grid_id-> (x1'=x1+1) & (R1Lock' = true);
+    	[R1MoveUp] !R1Lock & y1<max_grid_id -> (y1'=y1+1) & (R1Lock' = true);
+    	[R1MoveDown] !R1Lock & y1>0 -> (y1'=y1-1) & (R1Lock' = true);
+    
+    	//complete tasks:
+	[T0Complete] !R1Lock & T0Active=true & x1=tx0 & y1=ty0-> (R1Lock' = true);
+	[T1Complete] !R1Lock & T1Active=true & x1=tx1 & y1=ty1-> (R1Lock' = true);
+
+	// wait
+    	[R1Wait] !R1Lock -> (R1Lock' = true); //do nothing
+    
+    endmodule
+
+
+module task0
+    
+    	T0Active : bool init true;
+    	tx0 : [0..max_grid_id];
+    	ty0 : [0..max_grid_id];
+    
+    	[T0Complete] T0Active=true & x0=tx0 & y0=ty0 -> (T0Active' = false);
+    
+    endmodule
+
+
+module task1
+    
+    	T1Active : bool init true;
+    	tx1 : [0..max_grid_id];
+    	ty1 : [0..max_grid_id];
+    
+    	[T1Complete] T1Active=true & x1=tx1 & y1=ty1 -> (T1Active' = false);
+    
+    endmodule
+
+module sync
+
+	completed: [0..2] init 0;
+
+	[release] completed = 2 -> (completed'=0);
+    
+    	[R0MoveLeft] true -> (completed' = min(completed+1, 2));
+    	[R0MoveRight] true -> (completed' = min(completed+1, 2));
+    	[R0MoveUp] true -> (completed' = min(completed+1, 2));
+    	[R0MoveDown] true -> (completed' = min(completed+1, 2));
+    	[R0Wait] true -> (completed' = min(completed+1, 2));
+    
+    	[R1MoveLeft] true -> (completed' = min(completed+1, 2));
+    	[R1MoveRight] true -> (completed' = min(completed+1, 2));
+    	[R1MoveUp] true -> (completed' = min(completed+1, 2));
+    	[R1MoveDown] true -> (completed' = min(completed+1, 2));
+    	[R1Wait] true -> (completed' = min(completed+1, 2));
+
+endmodule
+
+rewards "time"
+		
+	[release] true: 1;
+
+endrewards

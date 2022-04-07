@@ -1,0 +1,91 @@
+mdp
+
+const int grid_size = 3;
+const int no_bots = 1;
+//const int no_tasks = 2;
+const int max_grid_id = grid_size;
+
+const bool X1Y1_Occupied = false;
+const bool X2Y1_Occupied = true;
+const bool X3Y1_Occupied = false;
+const bool X1Y2_Occupied = false;
+const bool X2Y2_Occupied = true;
+const bool X3Y2_Occupied = false;
+const bool X1Y3_Occupied = false;
+const bool X2Y3_Occupied = false;
+const bool X3Y3_Occupied = false;
+
+// bool true/false is there an obstacle to the right of r1?
+formula obstacleLeftR1 = (x1 = 2 & y1 = 1 & X1Y1_Occupied = true)|(x1 = 2 & y1 = 2 & X1Y2_Occupied = true)|(x1 = 2 & y1 = 3 & X1Y3_Occupied = true)|(x1 = 3 & y1 = 1 & X2Y1_Occupied = true)|(x1 = 3 & y1 = 2 & X2Y2_Occupied = true)|(x1 = 3 & y1 = 3 & X2Y3_Occupied = true);
+formula obstacleRightR1 = (x1 = 1 & y1 = 1 & X2Y1_Occupied = true)|(x1 = 1 & y1 = 2 & X2Y2_Occupied = true)|(x1 = 1 & y1 = 3 & X2Y3_Occupied = true)|(x1 = 2 & y1 = 1 & X3Y1_Occupied = true)|(x1 = 2 & y1 = 2 & X3Y2_Occupied = true)|(x1 = 2 & y1 = 3 & X3Y3_Occupied = true);
+formula obstacleDownR1 = (x1 = 1 & y1 = 2 & X1Y1_Occupied = true)|(x1 = 1 & y1 = 3 & X1Y2_Occupied = true)|(x1 = 2 & y1 = 2 & X2Y1_Occupied = true)|(x1 = 2 & y1 = 3 & X2Y2_Occupied = true)|(x1 = 3 & y1 = 2 & X3Y1_Occupied = true)|(x1 = 3 & y1 = 3 & X3Y2_Occupied = true);
+formula obstacleUpR1 = (x1 = 1 & y1 = 1 & X1Y2_Occupied = true)|(x1 = 1 & y1 = 2 & X1Y3_Occupied = true)|(x1 = 2 & y1 = 1 & X2Y2_Occupied = true)|(x1 = 2 & y1 = 2 & X2Y3_Occupied = true)|(x1 = 3 & y1 = 1 & X3Y2_Occupied = true)|(x1 = 3 & y1 = 2 & X3Y3_Occupied = true);
+
+module robot1
+
+	R1Lock : bool; // lock for clock sync
+	x1 : [1..max_grid_id]; // location variables
+	y1 : [1..max_grid_id];
+
+	[release] R1Lock = true -> (R1Lock'=false); // release lock according to the sync module
+
+	[R1Move] active_bot = 0 & !R1Lock & x1>1 & !obstacleLeftR1-> (x1'=x1-1) & (R1Lock' = true); // left
+	[R1Move] active_bot = 0 & !R1Lock & x1<max_grid_id & !obstacleRightR1-> (x1'=x1+1) & (R1Lock' = true); // right
+	[R1Move] active_bot = 0 & !R1Lock & y1>1 & !obstacleDownR1-> (y1'=y1-1) & (R1Lock' = true); // down
+	[R1Move] active_bot = 0 & !R1Lock & y1<max_grid_id & !obstacleUpR1-> (y1'=y1+1) & (R1Lock' = true); // up
+
+	[T1Complete] active_bot = 0 & !R1Lock & T1Active=true & x1=tx1 & y1=ty1-> (R1Lock' = true);
+	[T2Complete] active_bot = 0 & !R1Lock & T2Active=true & x1=tx1 & y1=ty1-> (R1Lock' = true);
+
+	[R1Wait] active_bot = 0 & !R1Lock -> (R1Lock' = true); //do nothing
+
+endmodule
+
+
+module task1
+
+	T1Active : bool init true;
+	tx1 : [1..max_grid_id] init 3;
+	ty1 : [1..max_grid_id] init 1;
+
+	[T1Complete] T1Active=true & x1=tx1 & y1=ty1 -> (T1Active' = false);
+	
+endmodule
+
+
+module task2 = task1 [tx1=tx2, ty1=ty2, T1Active=T2Active, T1Complete=T2Complete] endmodule
+
+
+module sync
+
+	active_bot : [0..no_bots];
+	
+	[release] active_bot = no_bots -> (active_bot'=0);
+
+	[R1Move] true -> (active_bot' = min(active_bot+1, no_bots));
+	[R1Wait] true -> (active_bot' = min(active_bot+1, no_bots));
+	[T1Complete] true -> (active_bot' = min(active_bot+1, no_bots));
+	[T2Complete] true -> (active_bot' = min(active_bot+1, no_bots));
+
+endmodule
+
+
+rewards "time"
+		
+	[release] true: 1;
+
+endrewards
+
+//init
+//	x1 = 1 &
+//	y1 = 1 &
+//	tx1 = 3 &
+//	ty1 = 3 &
+//	tx2 = 1 &
+//	ty2 = 3 &
+//	R1Lock = false &
+//	T1Active = true &
+//	T2Active = true &
+//	active_bot = 0
+//endinit
+

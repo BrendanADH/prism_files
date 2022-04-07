@@ -1,0 +1,156 @@
+mdp
+
+const int grid_size = 3;
+const int no_bots = 1;
+//const int no_tasks = 2;
+const int max_grid_id = grid_size;
+
+module robot1
+
+	R1Lock : bool; // lock for clock sync
+	x1 : [1..max_grid_id] init 1; // location variables
+	y1 : [1..max_grid_id]  init 1;
+
+	targetX1 : [0..max_grid_id] init 0;
+	targetY1 : [0..max_grid_id] init 0;
+
+	awaiting_Confirmation1 : bool init false;
+
+	[release] R1Lock = true -> (R1Lock'=false); // release lock according to the sync module
+
+	//movement commands
+	[R1Target] awaiting_Confirmation1=false & active_bot = 0 & !R1Lock & x1>1 -> (targetX1' = x1-1) & (targetY1' = y1) & (awaiting_Confirmation1'=true); // left
+	[R1Target] awaiting_Confirmation1=false & active_bot = 0 & !R1Lock & x1<max_grid_id -> (targetX1' = x1+1) & (targetY1' = y1) & (awaiting_Confirmation1'=true);// right
+	[R1Target] awaiting_Confirmation1=false & active_bot = 0 & !R1Lock & y1>1 -> (targetX1' = x1) & (targetY1' = y1-1) & (awaiting_Confirmation1'=true); // down
+	[R1Target] awaiting_Confirmation1=false & active_bot = 0 & !R1Lock & y1<max_grid_id -> (targetX1' = x1) & (targetY1' = y1+1) & (awaiting_Confirmation1'=true); // up
+
+
+	// why do i need to add seemingly redundant guards here to avoid errors?
+	[ConfirmMovement] awaiting_Confirmation1 & active_bot = 0 & !R1Lock & (targetX1 = x1-1) & x1>1 -> (x1'=x1-1) & (R1Lock' = true) & (awaiting_Confirmation1' = false) & (targetX1' = 0) & (targetY1' = 0); // left
+	[ConfirmMovement] awaiting_Confirmation1 & active_bot = 0 & !R1Lock & (targetX1 = x1+1) -> (x1'=x1+1) & (R1Lock' = true) & (awaiting_Confirmation1' = false) & (targetX1' = 0) & (targetY1' = 0); // right
+	[ConfirmMovement] awaiting_Confirmation1 & active_bot = 0 & !R1Lock & (targetY1 = y1-1) & y1>1 -> (y1'=y1-1) & (R1Lock' = true) & (awaiting_Confirmation1' = false) & (targetX1' = 0) & (targetY1' = 0); // down
+	[ConfirmMovement] awaiting_Confirmation1 & active_bot = 0 & !R1Lock & (targetY1 = y1+1) -> (y1'=y1+1) & (R1Lock' = true) & (awaiting_Confirmation1' = false) & (targetX1' = 0) & (targetY1' = 0); // up
+
+	[CancelMovement] awaiting_Confirmation1 & active_bot = 0 & !R1Lock -> (awaiting_Confirmation1' = false) & (targetX1' = 0) & (targetY1' = 0);
+
+	//complete a task
+	[T1Complete] awaiting_Confirmation1 = false & active_bot = 0 & !R1Lock & T1Active=true & x1=tx1 & y1=ty1-> (R1Lock' = true);
+	[T2Complete] awaiting_Confirmation1 = false & active_bot = 0 & !R1Lock & T2Active=true & x1=tx1 & y1=ty1-> (R1Lock' = true);
+
+	// wait
+	[R1Wait] awaiting_Confirmation1 = false & active_bot = 0 & !R1Lock -> (R1Lock' = true); //do nothing
+
+
+
+endmodule
+
+
+module task1
+
+	T1Active : bool init true;
+	tx1 : [1..max_grid_id] init 3;
+	ty1 : [1..max_grid_id] init 1;
+
+	[T1Complete] T1Active=true & x1=tx1 & y1=ty1 -> (T1Active' = false);
+	
+endmodule
+
+
+module task2 = task1 [tx1=tx2, ty1=ty2, T1Active=T2Active, T1Complete=T2Complete] endmodule
+
+
+module sync
+
+	// this approach is somewhat limiting because r1 cannot move twice before r2
+	active_bot : [0..no_bots] init 0;
+	
+	[release] active_bot = no_bots -> (active_bot'=0);
+
+	[ConfirmMovement] true -> (active_bot' = min(active_bot+1, no_bots));
+	[R1Wait] true -> (active_bot' = min(active_bot+1, no_bots));
+	[T1Complete] true -> (active_bot' = min(active_bot+1, no_bots));
+	[T2Complete] true -> (active_bot' = min(active_bot+1, no_bots));
+
+endmodule
+
+
+module obstacles
+
+	X1Y1_Occupied : bool init false;
+	X2Y1_Occupied : bool init false;
+	X3Y1_Occupied : bool init false;
+	X1Y2_Occupied : bool init false;
+	X2Y2_Occupied : bool init false;
+	X3Y2_Occupied : bool init false;
+	X1Y3_Occupied : bool init false;
+	X2Y3_Occupied : bool init false;
+	X3Y3_Occupied : bool init false;
+	targetX : [0..max_grid_id] init 0;
+	targetY : [0..max_grid_id] init 0;
+	
+	[AssignTarget] awaiting_Confirmation1 = true & targetX = 0 & targetY = 0 -> (targetX'=targetX1) & (targetY'=targetY1);
+
+	[ConfirmMovement] targetX = 1 & targetY = 1 & !X1Y1_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 1 & targetY = 1 & X1Y1_Occupied -> (targetX'=0) & (targetY'=0);
+
+	[ConfirmMovement] targetX = 2 & targetY = 1 & !X2Y1_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 2 & targetY = 1 & X2Y1_Occupied -> (targetX'=0) & (targetY'=0);
+
+	[ConfirmMovement] targetX = 3 & targetY = 1 & !X3Y1_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 3 & targetY = 1 & X3Y1_Occupied -> (targetX'=0) & (targetY'=0);
+
+	[ConfirmMovement] targetX = 1 & targetY = 2 & !X1Y2_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 1 & targetY = 2 & X1Y2_Occupied -> (targetX'=0) & (targetY'=0);
+
+	[ConfirmMovement] targetX = 2 & targetY = 2 & !X2Y2_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 2 & targetY = 2 & X2Y2_Occupied -> (targetX'=0) & (targetY'=0);
+
+	[ConfirmMovement] targetX = 3 & targetY = 2 & !X3Y2_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 3 & targetY = 2 & X3Y2_Occupied -> (targetX'=0) & (targetY'=0);
+
+	[ConfirmMovement] targetX = 1 & targetY = 3 & !X2Y3_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 1 & targetY = 3 & X2Y3_Occupied -> (targetX'=0) & (targetY'=0);
+
+	[ConfirmMovement] targetX = 2 & targetY = 3 & !X2Y3_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 2 & targetY = 3 & X2Y3_Occupied -> (targetX'=0) & (targetY'=0);
+
+	[ConfirmMovement] targetX = 3 & targetY = 3 & !X3Y3_Occupied -> (targetX'=0) & (targetY'=0);
+	[CancelMovement] targetX = 3 & targetY = 3 & X3Y3_Occupied -> (targetX'=0) & (targetY'=0);
+
+
+endmodule
+
+
+rewards "time"
+		
+	[release] true: 1;
+
+endrewards
+
+//init
+//	x1 = 1 &
+//	y1 = 1 &
+//	tx1 = 3 &
+//	ty1 = 3 &
+//	tx2 = 2 &
+//	ty2 = 2 &
+//	awaiting_Confirmation1 = false &
+//	targetX1 = 1 &
+//	targetY1 = 1 &
+//	targetX = -1 &
+//	targetY = - 1 &
+//	X1Y1_Occupied  = true &
+//	X2Y1_Occupied  = false &
+//	X3Y1_Occupied  = false &
+//	X1Y2_Occupied  = false &
+//	X2Y2_Occupied  = false &
+//	X3Y2_Occupied  = false &
+//	X1Y3_Occupied  = false &
+//	X2Y3_Occupied  = false &
+//	X3Y3_Occupied  = false &
+//	R1Lock = false &
+//	T1Active = true &
+//	T2Active = true &
+//	active_bot = 0
+//endinit
+

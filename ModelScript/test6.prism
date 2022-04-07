@@ -1,0 +1,204 @@
+mdp
+
+const int num_robots = 2;
+const int num_tasks = 2;
+const int grid_size = 10;
+const int max_grid_id = 9;
+
+module robot0
+    
+    	R0Lock : bool; // lock for clock sync
+    	x0 : [0..max_grid_id] init 0; // location variables
+    	y0 : [0..max_grid_id] init 0;
+
+    	[release] R0Lock = true -> (R0Lock'=false); // release lock according to the sync module
+
+    	// movement commands
+    	[R0MoveLeft] !R0Lock & x0>0 -> (x0'=x0-1) & (R0Lock' = true);
+    	[R0MoveRight] !R0Lock & x0<max_grid_id-> (x0'=x0+1) & (R0Lock' = true);
+    	[R0MoveUp] !R0Lock & y0<max_grid_id -> (y0'=y0+1) & (R0Lock' = true);
+    	[R0MoveDown] !R0Lock & y0>0 -> (y0'=y0-1) & (R0Lock' = true);
+    
+    	//complete tasks:
+	[T0Complete] !R0Lock & T0Active=true & x0=tx0 & y0=ty0-> (R0Lock' = true);
+	[T1Complete] !R0Lock & T1Active=true & x0=tx1 & y0=ty1-> (R0Lock' = true);
+
+	// wait
+    	[R0Wait] !R0Lock -> (R0Lock' = true); //do nothing
+    
+    endmodule
+
+
+module robot1
+    
+    	R1Lock : bool; // lock for clock sync
+    	x1 : [0..max_grid_id] init 0; // location variables
+    	y1 : [0..max_grid_id] init 0;
+
+    	[release] R1Lock = true -> (R1Lock'=false); // release lock according to the sync module
+
+    	// movement commands
+    	[R1MoveLeft] !R1Lock & x1>0 -> (x1'=x1-1) & (R1Lock' = true);
+    	[R1MoveRight] !R1Lock & x1<max_grid_id-> (x1'=x1+1) & (R1Lock' = true);
+    	[R1MoveUp] !R1Lock & y1<max_grid_id -> (y1'=y1+1) & (R1Lock' = true);
+    	[R1MoveDown] !R1Lock & y1>0 -> (y1'=y1-1) & (R1Lock' = true);
+    
+    	//complete tasks:
+	[T0Complete] !R1Lock & T0Active=true & x1=tx0 & y1=ty0-> (R1Lock' = true);
+	[T1Complete] !R1Lock & T1Active=true & x1=tx1 & y1=ty1-> (R1Lock' = true);
+
+	// wait
+    	[R1Wait] !R1Lock -> (R1Lock' = true); //do nothing
+    
+    endmodule
+
+
+module task0
+    
+    	T0Active : bool init true;
+    	tx0 : [0..max_grid_id];
+    	ty0 : [0..max_grid_id];
+    
+    	[T0Complete] T0Active=true & x0=tx0 & y0=ty0 -> (T0Active' = false);
+    
+    endmodule
+
+
+module task1
+    
+    	T1Active : bool init true;
+    	tx1 : [0..max_grid_id];
+    	ty1 : [0..max_grid_id];
+    
+    	[T1Complete] T1Active=true & x1=tx1 & y1=ty1 -> (T1Active' = false);
+    
+    endmodule
+
+module sync
+
+	completed: [0..2] init 0;
+
+	[release] completed = 2 -> (completed'=0);
+    
+    	[R0MoveLeft] true -> (completed' = min(completed+1, num_robots));
+    	[R0MoveRight] true -> (completed' = min(completed+1, num_robots));
+    	[R0MoveUp] true -> (completed' = min(completed+1, num_robots));
+    	[R0MoveDown] true -> (completed' = min(completed+1, num_robots));
+    	[R0Wait] true -> (completed' = min(completed+1, num_robots));
+    
+    	[R1MoveLeft] true -> (completed' = min(completed+1, num_robots));
+    	[R1MoveRight] true -> (completed' = min(completed+1, num_robots));
+    	[R1MoveUp] true -> (completed' = min(completed+1, num_robots));
+    	[R1MoveDown] true -> (completed' = min(completed+1, num_robots));
+    	[R1Wait] true -> (completed' = min(completed+1, num_robots));
+
+endmodule
+
+module obstacles	X0Y0Occupied : bool init false;
+	X0Y1Occupied : bool init false;
+	X0Y2Occupied : bool init false;
+	X0Y3Occupied : bool init false;
+	X0Y4Occupied : bool init false;
+	X0Y5Occupied : bool init false;
+	X0Y6Occupied : bool init false;
+	X0Y7Occupied : bool init false;
+	X0Y8Occupied : bool init false;
+	X0Y9Occupied : bool init false;
+	X1Y0Occupied : bool init false;
+	X1Y1Occupied : bool init false;
+	X1Y2Occupied : bool init false;
+	X1Y3Occupied : bool init false;
+	X1Y4Occupied : bool init false;
+	X1Y5Occupied : bool init false;
+	X1Y6Occupied : bool init false;
+	X1Y7Occupied : bool init false;
+	X1Y8Occupied : bool init false;
+	X1Y9Occupied : bool init false;
+	X2Y0Occupied : bool init false;
+	X2Y1Occupied : bool init false;
+	X2Y2Occupied : bool init false;
+	X2Y3Occupied : bool init false;
+	X2Y4Occupied : bool init false;
+	X2Y5Occupied : bool init false;
+	X2Y6Occupied : bool init false;
+	X2Y7Occupied : bool init false;
+	X2Y8Occupied : bool init false;
+	X2Y9Occupied : bool init false;
+	X3Y0Occupied : bool init false;
+	X3Y1Occupied : bool init false;
+	X3Y2Occupied : bool init false;
+	X3Y3Occupied : bool init false;
+	X3Y4Occupied : bool init false;
+	X3Y5Occupied : bool init false;
+	X3Y6Occupied : bool init false;
+	X3Y7Occupied : bool init false;
+	X3Y8Occupied : bool init false;
+	X3Y9Occupied : bool init false;
+	X4Y0Occupied : bool init false;
+	X4Y1Occupied : bool init false;
+	X4Y2Occupied : bool init false;
+	X4Y3Occupied : bool init false;
+	X4Y4Occupied : bool init false;
+	X4Y5Occupied : bool init false;
+	X4Y6Occupied : bool init false;
+	X4Y7Occupied : bool init false;
+	X4Y8Occupied : bool init false;
+	X4Y9Occupied : bool init false;
+	X5Y0Occupied : bool init false;
+	X5Y1Occupied : bool init false;
+	X5Y2Occupied : bool init false;
+	X5Y3Occupied : bool init false;
+	X5Y4Occupied : bool init false;
+	X5Y5Occupied : bool init false;
+	X5Y6Occupied : bool init false;
+	X5Y7Occupied : bool init false;
+	X5Y8Occupied : bool init false;
+	X5Y9Occupied : bool init false;
+	X6Y0Occupied : bool init false;
+	X6Y1Occupied : bool init false;
+	X6Y2Occupied : bool init false;
+	X6Y3Occupied : bool init false;
+	X6Y4Occupied : bool init false;
+	X6Y5Occupied : bool init false;
+	X6Y6Occupied : bool init false;
+	X6Y7Occupied : bool init false;
+	X6Y8Occupied : bool init false;
+	X6Y9Occupied : bool init false;
+	X7Y0Occupied : bool init false;
+	X7Y1Occupied : bool init false;
+	X7Y2Occupied : bool init false;
+	X7Y3Occupied : bool init false;
+	X7Y4Occupied : bool init false;
+	X7Y5Occupied : bool init false;
+	X7Y6Occupied : bool init false;
+	X7Y7Occupied : bool init false;
+	X7Y8Occupied : bool init false;
+	X7Y9Occupied : bool init false;
+	X8Y0Occupied : bool init false;
+	X8Y1Occupied : bool init false;
+	X8Y2Occupied : bool init false;
+	X8Y3Occupied : bool init false;
+	X8Y4Occupied : bool init false;
+	X8Y5Occupied : bool init false;
+	X8Y6Occupied : bool init false;
+	X8Y7Occupied : bool init false;
+	X8Y8Occupied : bool init false;
+	X8Y9Occupied : bool init false;
+	X9Y0Occupied : bool init false;
+	X9Y1Occupied : bool init false;
+	X9Y2Occupied : bool init false;
+	X9Y3Occupied : bool init false;
+	X9Y4Occupied : bool init false;
+	X9Y5Occupied : bool init false;
+	X9Y6Occupied : bool init false;
+	X9Y7Occupied : bool init false;
+	X9Y8Occupied : bool init false;
+	X9Y9Occupied : bool init false;
+
+endmodule
+
+rewards "time"
+		
+	[release] true: 1;
+
+endrewards
