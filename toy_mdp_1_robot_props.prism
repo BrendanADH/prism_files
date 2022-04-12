@@ -1,2 +1,2 @@
-R{"time"}min=? [ F(!T1Active & !T2Active) ]
+R{"time"}min=? [ F (!T0Active&!T1Active) ]
 

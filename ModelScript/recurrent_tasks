@@ -1,0 +1,95 @@
+mdp
+
+const grid_size = 5;
+const num_robots = 1;
+
+const bool X1Y1_Occupied = false;
+const bool X1Y2_Occupied = false;
+const bool X1Y3_Occupied = false;
+const bool X1Y4_Occupied = false;
+const bool X1Y5_Occupied = false;
+const bool X2Y1_Occupied = false;
+const bool X2Y2_Occupied = false;
+const bool X2Y3_Occupied = false;
+const bool X2Y4_Occupied = false;
+const bool X2Y5_Occupied = false;
+const bool X3Y1_Occupied = false;
+const bool X3Y2_Occupied = false;
+const bool X3Y3_Occupied = false;
+const bool X3Y4_Occupied = false;
+const bool X3Y5_Occupied = false;
+const bool X4Y1_Occupied = false;
+const bool X4Y2_Occupied = false;
+const bool X4Y3_Occupied = false;
+const bool X4Y4_Occupied = false;
+const bool X4Y5_Occupied = false;
+const bool X5Y1_Occupied = false;
+const bool X5Y2_Occupied = false;
+const bool X5Y3_Occupied = false;
+const bool X5Y4_Occupied = false;
+const bool X5Y5_Occupied = false;
+
+formula obstacleLeftR0 = (x0 = 2 & y0 = 1 & X1Y1_Occupied = true)|(x0 = 2 & y0 = 2 & X1Y2_Occupied = true)|(x0 = 2 & y0 = 3 & X1Y3_Occupied = true)|(x0 = 3 & y0 = 1 & X2Y1_Occupied = true)|(x0 = 3 & y0 = 2 & X2Y2_Occupied = true)|(x0 = 3 & y0 = 3 & X2Y3_Occupied = true); 
+formula obstacleRightR0 = (x0 = 1 & y0 = 1 & X2Y1_Occupied = true)|(x0 = 1 & y0 = 2 & X2Y2_Occupied = true)|(x0 = 1 & y0 = 3 & X2Y3_Occupied = true)|(x0 = 2 & y0 = 1 & X3Y1_Occupied = true)|(x0 = 2 & y0 = 2 & X3Y2_Occupied = true)|(x0 = 2 & y0 = 3 & X3Y3_Occupied = true); 
+formula obstacleDownR0 = (x0 = 1 & y0 = 2 & X1Y1_Occupied = true)|(x0 = 1 & y0 = 3 & X1Y2_Occupied = true)|(x0 = 2 & y0 = 2 & X2Y1_Occupied = true)|(x0 = 2 & y0 = 3 & X2Y2_Occupied = true)|(x0 = 3 & y0 = 2 & X3Y1_Occupied = true)|(x0 = 3 & y0 = 3 & X3Y2_Occupied = true); 
+formula obstacleUpR0 = (x0 = 1 & y0 = 1 & X1Y2_Occupied = true)|(x0 = 1 & y0 = 2 & X1Y3_Occupied = true)|(x0 = 2 & y0 = 1 & X2Y2_Occupied = true)|(x0 = 2 & y0 = 2 & X2Y3_Occupied = true)|(x0 = 3 & y0 = 1 & X3Y2_Occupied = true)|(x0 = 3 & y0 = 2 & X3Y3_Occupied = true);
+
+module robot0
+
+	R0Lock : bool; // lock for clock sync
+	x0 : [1..grid_size]; // location variables
+	y0 : [1..grid_size];
+
+	[release] R0Lock = true -> (R0Lock'=false); // release lock according to the sync module
+	[R0Move] active_bot = 0 & !R0Lock & x0>1 & !obstacleLeftR0-> (x0'=x0-1) & (R0Lock' = true); // left 
+	[R0Move] active_bot = 0 & !R0Lock & x0<grid_size & !obstacleRightR0-> (x0'=x0+1) & (R0Lock' = true); // right 
+	[R0Move] active_bot = 0 & !R0Lock & y0>1 & !obstacleDownR0-> (y0'=y0-1) & (R0Lock' = true); // down 
+	[R0Move] active_bot = 0 & !R0Lock & y0<grid_size & !obstacleUpR0-> (y0'=y0+1) & (R0Lock' = true); // up 
+
+	[R0Wait] active_bot = 0 & !R0Lock -> (R0Lock' = true); // wait
+
+	[T0R0Complete] active_bot = 0 & !R0Lock & T0Active=true & x0=tx0 & y0=ty0-> (R0Lock' = true);
+
+endmodule
+
+module task0
+
+	T0Active : bool;
+	tx0 : [1..grid_size];
+	ty0 : [1..grid_size];
+
+	[T0R0Complete] T0Active=true & x0=tx0 & y0=ty0 -> (T0Active' = false);
+
+endmodule
+
+module sync
+
+	active_bot : [0..num_robots];
+
+	[release] active_bot = num_robots -> (active_bot'=0);
+
+	[R0Move] true -> (active_bot' = min(active_bot+1, num_robots));
+	[R0Wait] true -> (active_bot' = min(active_bot+1, num_robots));
+
+	[T0R0Complete] true -> (active_bot' = min(active_bot+1, num_robots));
+
+endmodule
+
+rewards "time"
+
+	[release] true: 1;
+
+endrewards
+
+init
+
+	R0Lock = false &
+	T0Active = true &
+	active_bot = 0 &	
+	x0 = 1 &
+	y0 = 2 &
+	tx0 = 3 &
+	ty0 = 3
+	
+
+endinit

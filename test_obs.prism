@@ -41,7 +41,6 @@ module robot1
 
 endmodule
 
-
 module task1
 
 	T1Active : bool init true;
@@ -87,5 +86,5 @@ endrewards
 //	T1Active = true &
 //	T2Active = true &
 //	active_bot = 0
-//endinit
+	//endinit
 
