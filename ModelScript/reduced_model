@@ -29,10 +29,10 @@ const bool X5Y3_Occupied = false;
 const bool X5Y4_Occupied = false;
 const bool X5Y5_Occupied = false;
 
-formula obstacleLeftR0 = (x0 = 2 & y0 = 1 & X1Y1_Occupied = true)|(x0 = 2 & y0 = 2 & X1Y2_Occupied = true)|(x0 = 2 & y0 = 3 & X1Y3_Occupied = true)|(x0 = 3 & y0 = 1 & X2Y1_Occupied = true)|(x0 = 3 & y0 = 2 & X2Y2_Occupied = true)|(x0 = 3 & y0 = 3 & X2Y3_Occupied = true); 
-formula obstacleRightR0 = (x0 = 1 & y0 = 1 & X2Y1_Occupied = true)|(x0 = 1 & y0 = 2 & X2Y2_Occupied = true)|(x0 = 1 & y0 = 3 & X2Y3_Occupied = true)|(x0 = 2 & y0 = 1 & X3Y1_Occupied = true)|(x0 = 2 & y0 = 2 & X3Y2_Occupied = true)|(x0 = 2 & y0 = 3 & X3Y3_Occupied = true); 
-formula obstacleDownR0 = (x0 = 1 & y0 = 2 & X1Y1_Occupied = true)|(x0 = 1 & y0 = 3 & X1Y2_Occupied = true)|(x0 = 2 & y0 = 2 & X2Y1_Occupied = true)|(x0 = 2 & y0 = 3 & X2Y2_Occupied = true)|(x0 = 3 & y0 = 2 & X3Y1_Occupied = true)|(x0 = 3 & y0 = 3 & X3Y2_Occupied = true); 
-formula obstacleUpR0 = (x0 = 1 & y0 = 1 & X1Y2_Occupied = true)|(x0 = 1 & y0 = 2 & X1Y3_Occupied = true)|(x0 = 2 & y0 = 1 & X2Y2_Occupied = true)|(x0 = 2 & y0 = 2 & X2Y3_Occupied = true)|(x0 = 3 & y0 = 1 & X3Y2_Occupied = true)|(x0 = 3 & y0 = 2 & X3Y3_Occupied = true);
+formula obstacleLeftR0 = (x0 = 2 & y0 = 1 & X1Y1_Occupied = true)|(x0 = 2 & y0 = 2 & X1Y2_Occupied = true)|(x0 = 2 & y0 = 3 & X1Y3_Occupied = true)|(x0 = 3 & y0 = 1 & X2Y1_Occupied = true)|(x0 = 3 & y0 = 2 & X2Y2_Occupied = true)|(x0 = 3 & y0 = 3 & X2Y3_Occupied = true)|(x0=1)|(x1 = x0-1); 
+formula obstacleRightR0 = (x0 = 1 & y0 = 1 & X2Y1_Occupied = true)|(x0 = 1 & y0 = 2 & X2Y2_Occupied = true)|(x0 = 1 & y0 = 3 & X2Y3_Occupied = true)|(x0 = 2 & y0 = 1 & X3Y1_Occupied = true)|(x0 = 2 & y0 = 2 & X3Y2_Occupied = true)|(x0 = 2 & y0 = 3 & X3Y3_Occupied = true)|(x0=grid_size)|(x1 = x0+1); 
+formula obstacleDownR0 = (x0 = 1 & y0 = 2 & X1Y1_Occupied = true)|(x0 = 1 & y0 = 3 & X1Y2_Occupied = true)|(x0 = 2 & y0 = 2 & X2Y1_Occupied = true)|(x0 = 2 & y0 = 3 & X2Y2_Occupied = true)|(x0 = 3 & y0 = 2 & X3Y1_Occupied = true)|(x0 = 3 & y0 = 3 & X3Y2_Occupied = true)|(y0=1)|(y1 = y0-1); 
+formula obstacleUpR0 = (x0 = 1 & y0 = 1 & X1Y2_Occupied = true)|(x0 = 1 & y0 = 2 & X1Y3_Occupied = true)|(x0 = 2 & y0 = 1 & X2Y2_Occupied = true)|(x0 = 2 & y0 = 2 & X2Y3_Occupied = true)|(x0 = 3 & y0 = 1 & X3Y2_Occupied = true)|(x0 = 3 & y0 = 2 & X3Y3_Occupied = true)|(y0=grid_size)|(y1 = y0+1);
 
 module robot0
 
@@ -42,10 +42,10 @@ module robot0
 
 	[release] R0Lock = true -> (R0Lock'=false); // release lock according to the sync module
 	
-	[R0Move] !R0Lock & x0>1 & !obstacleLeftR0-> (x0'=x0-1) & (R0Lock' = true); // left 
-	[R0Move] !R0Lock & x0<grid_size & !obstacleRightR0-> (x0'=x0+1) & (R0Lock' = true); // right 
-	[R0Move] !R0Lock & y0>1 & !obstacleDownR0-> (y0'=y0-1) & (R0Lock' = true); // down 
-	[R0Move] !R0Lock & y0<grid_size & !obstacleUpR0-> (y0'=y0+1) & (R0Lock' = true); // up 
+	[R0Move] !R0Lock & !obstacleLeftR0-> (x0'=x0-1) & (R0Lock' = true); // left 
+	[R0Move] !R0Lock & !obstacleRightR0-> (x0'=x0+1) & (R0Lock' = true); // right 
+	[R0Move] !R0Lock & !obstacleDownR0-> (y0'=y0-1) & (R0Lock' = true); // down 
+	[R0Move] !R0Lock & !obstacleUpR0-> (y0'=y0+1) & (R0Lock' = true); // up 
 
 	[R0Wait] !R0Lock -> (R0Lock' = true); // wait
 
@@ -53,10 +53,10 @@ module robot0
 
 endmodule
 
-formula obstacleLeftR1 = (x1 = 2 & y1 = 1 & X1Y1_Occupied = true)|(x1 = 2 & y1 = 2 & X1Y2_Occupied = true)|(x1 = 2 & y1 = 3 & X1Y3_Occupied = true)|(x1 = 3 & y1 = 1 & X2Y1_Occupied = true)|(x1 = 3 & y1 = 2 & X2Y2_Occupied = true)|(x1 = 3 & y1 = 3 & X2Y3_Occupied = true); 
-formula obstacleRightR1 = (x1 = 1 & y1 = 1 & X2Y1_Occupied = true)|(x1 = 1 & y1 = 2 & X2Y2_Occupied = true)|(x1 = 1 & y1 = 3 & X2Y3_Occupied = true)|(x1 = 2 & y1 = 1 & X3Y1_Occupied = true)|(x1 = 2 & y1 = 2 & X3Y2_Occupied = true)|(x1 = 2 & y1 = 3 & X3Y3_Occupied = true); 
-formula obstacleDownR1 = (x1 = 1 & y1 = 2 & X1Y1_Occupied = true)|(x1 = 1 & y1 = 3 & X1Y2_Occupied = true)|(x1 = 2 & y1 = 2 & X2Y1_Occupied = true)|(x1 = 2 & y1 = 3 & X2Y2_Occupied = true)|(x1 = 3 & y1 = 2 & X3Y1_Occupied = true)|(x1 = 3 & y1 = 3 & X3Y2_Occupied = true); 
-formula obstacleUpR1 = (x1 = 1 & y1 = 1 & X1Y2_Occupied = true)|(x1 = 1 & y1 = 2 & X1Y3_Occupied = true)|(x1 = 2 & y1 = 1 & X2Y2_Occupied = true)|(x1 = 2 & y1 = 2 & X2Y3_Occupied = true)|(x1 = 3 & y1 = 1 & X3Y2_Occupied = true)|(x1 = 3 & y1 = 2 & X3Y3_Occupied = true);
+formula obstacleLeftR1 = (x1 = 2 & y1 = 1 & X1Y1_Occupied = true)|(x1 = 2 & y1 = 2 & X1Y2_Occupied = true)|(x1 = 2 & y1 = 3 & X1Y3_Occupied = true)|(x1 = 3 & y1 = 1 & X2Y1_Occupied = true)|(x1 = 3 & y1 = 2 & X2Y2_Occupied = true)|(x1 = 3 & y1 = 3 & X2Y3_Occupied = true)|(x1=1) | (x0 = x1-1); 
+formula obstacleRightR1 = (x1 = 1 & y1 = 1 & X2Y1_Occupied = true)|(x1 = 1 & y1 = 2 & X2Y2_Occupied = true)|(x1 = 1 & y1 = 3 & X2Y3_Occupied = true)|(x1 = 2 & y1 = 1 & X3Y1_Occupied = true)|(x1 = 2 & y1 = 2 & X3Y2_Occupied = true)|(x1 = 2 & y1 = 3 & X3Y3_Occupied = true)|(x1=grid_size) | (x0 = x1+1); 
+formula obstacleDownR1 = (x1 = 1 & y1 = 2 & X1Y1_Occupied = true)|(x1 = 1 & y1 = 3 & X1Y2_Occupied = true)|(x1 = 2 & y1 = 2 & X2Y1_Occupied = true)|(x1 = 2 & y1 = 3 & X2Y2_Occupied = true)|(x1 = 3 & y1 = 2 & X3Y1_Occupied = true)|(x1 = 3 & y1 = 3 & X3Y2_Occupied = true)|(y1=1) | (y0 = y1-1); 
+formula obstacleUpR1 = (x1 = 1 & y1 = 1 & X1Y2_Occupied = true)|(x1 = 1 & y1 = 2 & X1Y3_Occupied = true)|(x1 = 2 & y1 = 1 & X2Y2_Occupied = true)|(x1 = 2 & y1 = 2 & X2Y3_Occupied = true)|(x1 = 3 & y1 = 1 & X3Y2_Occupied = true)|(x1 = 3 & y1 = 2 & X3Y3_Occupied = true)|(y1=grid_size) | (y0 = y1+1);
 
 module robot1
 
@@ -108,12 +108,6 @@ init
 	R0Lock = false &
 	R1Lock = false &
 	T0Active = true &
-
-	x0 = 1 &
-	y0 = 2 &
-
-	x1 = 1 &
-	y1 = 1 &
 
 	tx0 = 3 &
 	ty0 = 3

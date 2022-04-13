@@ -41,14 +41,14 @@ module robot0
 	y0 : [1..grid_size];
 
 	[release] R0Lock = true -> (R0Lock'=false); // release lock according to the sync module
-	[R0Move] active_bot = 0 & !R0Lock & x0>1 & !obstacleLeftR0-> (x0'=x0-1) & (R0Lock' = true); // left 
-	[R0Move] active_bot = 0 & !R0Lock & x0<grid_size & !obstacleRightR0-> (x0'=x0+1) & (R0Lock' = true); // right 
-	[R0Move] active_bot = 0 & !R0Lock & y0>1 & !obstacleDownR0-> (y0'=y0-1) & (R0Lock' = true); // down 
-	[R0Move] active_bot = 0 & !R0Lock & y0<grid_size & !obstacleUpR0-> (y0'=y0+1) & (R0Lock' = true); // up 
+	[R0Move] !R0Lock & x0>1 & !obstacleLeftR0-> (x0'=x0-1) & (R0Lock' = true); // left 
+	[R0Move] !R0Lock & x0<grid_size & !obstacleRightR0-> (x0'=x0+1) & (R0Lock' = true); // right 
+	[R0Move] !R0Lock & y0>1 & !obstacleDownR0-> (y0'=y0-1) & (R0Lock' = true); // down 
+	[R0Move] !R0Lock & y0<grid_size & !obstacleUpR0-> (y0'=y0+1) & (R0Lock' = true); // up 
 
-	[R0Wait] active_bot = 0 & !R0Lock -> (R0Lock' = true); // wait
+	[R0Wait] !R0Lock -> (R0Lock' = true); // wait
 
-	[T0R0Complete] active_bot = 0 & !R0Lock & T0Active=true & x0=tx0 & y0=ty0-> (R0Lock' = true);
+	[T0R0Complete] R0Lock & T0Active=true & x0=tx0 & y0=ty0-> (R0Lock' = true);
 
 endmodule
 
@@ -64,14 +64,14 @@ module robot1
 	y1 : [1..grid_size];
 
 	[release] R1Lock = true -> (R1Lock'=false); // release lock according to the sync module
-	[R1Move] active_bot = 1 & !R1Lock & x1>1 & !obstacleLeftR1-> (x1'=x1-1) & (R1Lock' = true); // left 
-	[R1Move] active_bot = 1 & !R1Lock & x1<grid_size & !obstacleRightR1-> (x1'=x1+1) & (R1Lock' = true); // right 
-	[R1Move] active_bot = 1 & !R1Lock & y1>1 & !obstacleDownR1-> (y1'=y1-1) & (R1Lock' = true); // down 
-	[R1Move] active_bot = 1 & !R1Lock & y1<grid_size & !obstacleUpR1-> (y1'=y1+1) & (R1Lock' = true); // up 
+	[R1Move] !R1Lock & x1>1 & !obstacleLeftR1-> (x1'=x1-1) & (R1Lock' = true); // left 
+	[R1Move] !R1Lock & x1<grid_size & !obstacleRightR1-> (x1'=x1+1) & (R1Lock' = true); // right 
+	[R1Move] !R1Lock & y1>1 & !obstacleDownR1-> (y1'=y1-1) & (R1Lock' = true); // down 
+	[R1Move] !R1Lock & y1<grid_size & !obstacleUpR1-> (y1'=y1+1) & (R1Lock' = true); // up 
 
-	[R1Wait] active_bot = 1 & !R1Lock -> (R1Lock' = true); // wait
+	[R1Wait] !R1Lock -> (R1Lock' = true); // wait
 
-	[T0R1Complete] active_bot = 1 & !R1Lock & T0Active=true & x1=tx0 & y1=ty0-> (R1Lock' = true);
+	[T0R1Complete] R1Lock & T0Active=true & x1=tx0 & y1=ty0-> (R1Lock' = true);
 
 endmodule
 
@@ -87,14 +87,14 @@ module robot2
 	y2 : [1..grid_size];
 
 	[release] R2Lock = true -> (R2Lock'=false); // release lock according to the sync module
-	[R2Move] active_bot = 2 & !R2Lock & x2>1 & !obstacleLeftR2-> (x2'=x2-1) & (R2Lock' = true); // left 
-	[R2Move] active_bot = 2 & !R2Lock & x2<grid_size & !obstacleRightR2-> (x2'=x2+1) & (R2Lock' = true); // right 
-	[R2Move] active_bot = 2 & !R2Lock & y2>1 & !obstacleDownR2-> (y2'=y2-1) & (R2Lock' = true); // down 
-	[R2Move] active_bot = 2 & !R2Lock & y2<grid_size & !obstacleUpR2-> (y2'=y2+1) & (R2Lock' = true); // up 
+	[R2Move] !R2Lock & x2>1 & !obstacleLeftR2-> (x2'=x2-1) & (R2Lock' = true); // left 
+	[R2Move] !R2Lock & x2<grid_size & !obstacleRightR2-> (x2'=x2+1) & (R2Lock' = true); // right 
+	[R2Move] !R2Lock & y2>1 & !obstacleDownR2-> (y2'=y2-1) & (R2Lock' = true); // down 
+	[R2Move] !R2Lock & y2<grid_size & !obstacleUpR2-> (y2'=y2+1) & (R2Lock' = true); // up 
 
-	[R2Wait] active_bot = 2 & !R2Lock -> (R2Lock' = true); // wait
+	[R2Wait] !R2Lock -> (R2Lock' = true); // wait
 
-	[T0R2Complete] active_bot = 2 & !R2Lock & T0Active=true & x2=tx0 & y2=ty0-> (R2Lock' = true);
+	[T0R2Complete] R2Lock & T0Active=true & x2=tx0 & y2=ty0-> (R2Lock' = true);
 
 endmodule
 
@@ -110,14 +110,14 @@ module robot3
 	y3 : [1..grid_size];
 
 	[release] R3Lock = true -> (R3Lock'=false); // release lock according to the sync module
-	[R3Move] active_bot = 3 & !R3Lock & x3>1 & !obstacleLeftR3-> (x3'=x3-1) & (R3Lock' = true); // left 
-	[R3Move] active_bot = 3 & !R3Lock & x3<grid_size & !obstacleRightR3-> (x3'=x3+1) & (R3Lock' = true); // right 
-	[R3Move] active_bot = 3 & !R3Lock & y3>1 & !obstacleDownR3-> (y3'=y3-1) & (R3Lock' = true); // down 
-	[R3Move] active_bot = 3 & !R3Lock & y3<grid_size & !obstacleUpR3-> (y3'=y3+1) & (R3Lock' = true); // up 
+	[R3Move] !R3Lock & x3>1 & !obstacleLeftR3-> (x3'=x3-1) & (R3Lock' = true); // left 
+	[R3Move] !R3Lock & x3<grid_size & !obstacleRightR3-> (x3'=x3+1) & (R3Lock' = true); // right 
+	[R3Move] !R3Lock & y3>1 & !obstacleDownR3-> (y3'=y3-1) & (R3Lock' = true); // down 
+	[R3Move] !R3Lock & y3<grid_size & !obstacleUpR3-> (y3'=y3+1) & (R3Lock' = true); // up 
 
-	[R3Wait] active_bot = 3 & !R3Lock -> (R3Lock' = true); // wait
+	[R3Wait] !R3Lock -> (R3Lock' = true); // wait
 
-	[T0R3Complete] active_bot = 3 & !R3Lock & T0Active=true & x3=tx0 & y3=ty0-> (R3Lock' = true);
+	[T0R3Complete] R3Lock & T0Active=true & x3=tx0 & y3=ty0-> (R3Lock' = true);
 
 endmodule
 
@@ -134,25 +134,11 @@ module task0
 
 endmodule
 
+formula all_robots_complete = (R0Lock & R1Lock & R2Lock & R3Lock);
+
 module sync
 
-	active_bot : [0..num_robots];
-
-	[release] active_bot = num_robots -> (active_bot'=0);
-
-	[R0Move] true -> (active_bot' = min(active_bot+1, num_robots));
-	[R0Wait] true -> (active_bot' = min(active_bot+1, num_robots));
-	[R1Move] true -> (active_bot' = min(active_bot+1, num_robots));
-	[R1Wait] true -> (active_bot' = min(active_bot+1, num_robots));
-	[R2Move] true -> (active_bot' = min(active_bot+1, num_robots));
-	[R2Wait] true -> (active_bot' = min(active_bot+1, num_robots));
-	[R3Move] true -> (active_bot' = min(active_bot+1, num_robots));
-	[R3Wait] true -> (active_bot' = min(active_bot+1, num_robots));
-
-	[T0R0Complete] true -> (active_bot' = min(active_bot+1, num_robots));
-	[T0R1Complete] true -> (active_bot' = min(active_bot+1, num_robots));
-	[T0R2Complete] true -> (active_bot' = min(active_bot+1, num_robots));
-	[T0R3Complete] true -> (active_bot' = min(active_bot+1, num_robots));
+	[release] all_robots_complete -> true;
 
 endmodule
 
@@ -168,6 +154,6 @@ init
 	R1Lock = false &
 	R2Lock = false &
 	R3Lock = false &
-	T0Active = true &
-	active_bot = 0 
+	T0Active = true 
+
 endinit
