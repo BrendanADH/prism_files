@@ -1,0 +1,10 @@
+multi(R{"timeR1"}min=?[ F(!T0_active & !T1_active & !T2_active & !T3_active & !T4_active & !T5_active & !T6_active & !T7_active)], R{"timeR2"}min=? [F(!T0_active & !T1_active & !T2_active & !T3_active & !T4_active & !T5_active & !T6_active & !T7_active) ]) 
+
+multi(R{"timeR0"}min=? [C], R{"timeR1"}min=? [C], R{"timeR2"}min=? [C], R{"timeR3"}min=? [C], R{"timeR4"}min=? [C], R{"timeR5"}min=? [C])
+
+multi(R{"timeR0"}<=10 [C], R{"timeR1"}<=10 [C], R{"timeR2"}<=10 [C], R{"timeR3"}<=10 [C], R{"timeR4"}<=10 [C], R{"timeR5"}<=10 [C])
+
+multi(R{"timeR0"}<=1 [C], R{"timeR1"}<=1 [C], R{"timeR2"}<=1 [C], R{"timeR3"}<=1 [C], R{"timeR4"}<=1 [C], R{"timeR5"}<=1 [C])
+
+R{"timeR0"}min=? [F!T1_active] + R{"timeR1"}min=? [F!T0_active]
+

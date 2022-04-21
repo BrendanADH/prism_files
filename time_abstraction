@@ -1,0 +1,252 @@
+mdp
+
+const int locales = 4;
+const int num_tasks  = 2;
+
+const int dist_L1L1  = 1;
+const int dist_L1L2  = 2;
+const int dist_L1L3  = 3;
+const int dist_L1L4  = 4;
+const int dist_L2L1  = 1;
+const int dist_L2L2  = 2;
+const int dist_L2L3  = 3;
+const int dist_L2L4  = 4;
+const int dist_L3L1  = 1;
+const int dist_L3L2  = 2;
+const int dist_L3L3  = 3;
+const int dist_L3L4  = 4;
+const int dist_L4L1  = 1;
+const int dist_L4L2  = 2;
+const int dist_L4L3  = 3;
+const int dist_L4L4  = 4;
+
+const int T1_duration = 4;
+const int T2_duration = 4;
+
+// because the robots are not synced up step-wise, it's harder to measure time
+// count time individually per robot and then take the maximum
+
+module robot1
+
+	R1_locale: [1..locales] init 1; //locale of the robot
+	R1_lock : bool init false;
+	//R1_lag : [-10..10] init 0;
+
+	[release] true -> (R1_lock' = false);
+
+ 	[R1T1_complete] T1_active = true -> (R1_lock' = true) & (R1_locale' = T1_locale);
+ 	[R1T2_complete] T2_active = true -> (R1_lock' = true) & (R1_locale' = T2_locale);
+	[R1_wait] !R1_lock -> (R1_lock' = true);
+
+endmodule
+
+
+module robot2
+
+	R2_locale: [1..locales] init 3; //locale of the robot
+	R2_lock : bool init false;	
+	//R2_lag: [-10..10] init 0;
+
+	[release] true -> (R2_lock' = false);
+
+ 	[R2T1_complete] T1_active = true -> (R2_lock' = true) & (R2_locale' = T1_locale);
+ 	[R2T2_complete] T2_active = true -> (R2_lock' = true) & (R2_locale' = T2_locale);
+
+	[R2_wait] !R2_lock -> (R2_lock' = true);
+
+endmodule
+
+
+module task1
+	
+	T1_active : bool init true;
+
+	T1_locale: [1..locales] init 4;
+
+	[R1T1_complete] true->  (T1_active' = false);
+	[R2T1_complete] true->  (T1_active' = false);
+	
+	//[release] true -> (T1_satisfied' = false);
+
+endmodule
+
+
+module task2
+	
+	T2_active : bool init true;
+
+	T2_locale: [1..locales] init 2;
+
+	[R1T2_complete] true ->  (T2_active' = false);
+	[R2T2_complete] true ->  (T2_active' = false);
+
+	//[release] true -> (T2_satisfied' = false);
+
+endmodule
+
+
+formula all_assigned = (R1_lock) & (R2_lock);
+
+
+module sync
+
+	[release] all_assigned -> true;
+
+endmodule
+
+
+rewards "timeR1"
+
+ 	[R1T1_complete] R1_locale = 1 & T1_locale = 1 : dist_L1L1 + T1_duration;
+ 	[R1T1_complete] R1_locale = 1 & T1_locale = 2 : dist_L1L2 + T1_duration;
+ 	[R1T1_complete] R1_locale = 1 & T1_locale = 3 : dist_L1L3 + T1_duration;
+ 	[R1T1_complete] R1_locale = 1 & T1_locale = 4 : dist_L1L4 + T1_duration;
+ 	[R1T1_complete] R1_locale = 2 & T1_locale = 1 : dist_L2L1 + T1_duration;
+ 	[R1T1_complete] R1_locale = 2 & T1_locale = 2 : dist_L2L2 + T1_duration;
+ 	[R1T1_complete] R1_locale = 2 & T1_locale = 3 : dist_L2L3 + T1_duration;
+ 	[R1T1_complete] R1_locale = 2 & T1_locale = 4 : dist_L2L4 + T1_duration;
+ 	[R1T1_complete] R1_locale = 3 & T1_locale = 1 : dist_L3L1 + T1_duration;
+ 	[R1T1_complete] R1_locale = 3 & T1_locale = 2 : dist_L3L2 + T1_duration;
+ 	[R1T1_complete] R1_locale = 3 & T1_locale = 3 : dist_L3L3 + T1_duration;
+ 	[R1T1_complete] R1_locale = 3 & T1_locale = 4 : dist_L3L4 + T1_duration;
+ 	[R1T1_complete] R1_locale = 4 & T1_locale = 1 : dist_L4L1 + T1_duration;
+ 	[R1T1_complete] R1_locale = 4 & T1_locale = 2 : dist_L4L2 + T1_duration;
+ 	[R1T1_complete] R1_locale = 4 & T1_locale = 3 : dist_L4L3 + T1_duration;
+ 	[R1T1_complete] R1_locale = 4 & T1_locale = 4 : dist_L4L4 + T1_duration;
+ 	[R1T2_complete] R1_locale = 1 & T2_locale = 1 : dist_L1L1 + T2_duration;
+ 	[R1T2_complete] R1_locale = 1 & T2_locale = 2 : dist_L1L2 + T2_duration;
+ 	[R1T2_complete] R1_locale = 1 & T2_locale = 3 : dist_L1L3 + T2_duration;
+ 	[R1T2_complete] R1_locale = 1 & T2_locale = 4 : dist_L1L4 + T2_duration;
+ 	[R1T2_complete] R1_locale = 2 & T2_locale = 1 : dist_L2L1 + T2_duration;
+ 	[R1T2_complete] R1_locale = 2 & T2_locale = 2 : dist_L2L2 + T2_duration;
+ 	[R1T2_complete] R1_locale = 2 & T2_locale = 3 : dist_L2L3 + T2_duration;
+ 	[R1T2_complete] R1_locale = 2 & T2_locale = 4 : dist_L2L4 + T2_duration;
+ 	[R1T2_complete] R1_locale = 3 & T2_locale = 1 : dist_L3L1 + T2_duration;
+ 	[R1T2_complete] R1_locale = 3 & T2_locale = 2 : dist_L3L2 + T2_duration;
+ 	[R1T2_complete] R1_locale = 3 & T2_locale = 3 : dist_L3L3 + T2_duration;
+ 	[R1T2_complete] R1_locale = 3 & T2_locale = 4 : dist_L3L4 + T2_duration;
+ 	[R1T2_complete] R1_locale = 4 & T2_locale = 1 : dist_L4L1 + T2_duration;
+ 	[R1T2_complete] R1_locale = 4 & T2_locale = 2 : dist_L4L2 + T2_duration;
+ 	[R1T2_complete] R1_locale = 4 & T2_locale = 3 : dist_L4L3 + T2_duration;
+ 	[R1T2_complete] R1_locale = 4 & T2_locale = 4 : dist_L4L4 + T2_duration;
+
+ 	[R1_wait] true : 1;
+
+
+endrewards
+
+
+rewards "timeR2"
+
+	[R2T1_complete] R2_locale = 1 & T1_locale = 1 : dist_L1L1 + T1_duration;
+ 	[R2T1_complete] R2_locale = 1 & T1_locale = 2 : dist_L1L2 + T1_duration;
+ 	[R2T1_complete] R2_locale = 1 & T1_locale = 3 : dist_L1L3 + T1_duration;
+ 	[R2T1_complete] R2_locale = 1 & T1_locale = 4 : dist_L1L4 + T1_duration;
+ 	[R2T1_complete] R2_locale = 2 & T1_locale = 1 : dist_L2L1 + T1_duration;
+ 	[R2T1_complete] R2_locale = 2 & T1_locale = 2 : dist_L2L2 + T1_duration;
+ 	[R2T1_complete] R2_locale = 2 & T1_locale = 3 : dist_L2L3 + T1_duration;
+ 	[R2T1_complete] R2_locale = 2 & T1_locale = 4 : dist_L2L4 + T1_duration;
+ 	[R2T1_complete] R2_locale = 3 & T1_locale = 1 : dist_L3L1 + T1_duration;
+ 	[R2T1_complete] R2_locale = 3 & T1_locale = 2 : dist_L3L2 + T1_duration;
+ 	[R2T1_complete] R2_locale = 3 & T1_locale = 3 : dist_L3L3 + T1_duration;
+ 	[R2T1_complete] R2_locale = 3 & T1_locale = 4 : dist_L3L4 + T1_duration;
+ 	[R2T1_complete] R2_locale = 4 & T1_locale = 1 : dist_L4L1 + T1_duration;
+ 	[R2T1_complete] R2_locale = 4 & T1_locale = 2 : dist_L4L2 + T1_duration;
+ 	[R2T1_complete] R2_locale = 4 & T1_locale = 3 : dist_L4L3 + T1_duration;
+ 	[R2T1_complete] R2_locale = 4 & T1_locale = 4 : dist_L4L4 + T1_duration;
+ 	[R2T2_complete] R2_locale = 1 & T2_locale = 1 : dist_L1L1 + T2_duration;
+ 	[R2T2_complete] R2_locale = 1 & T2_locale = 2 : dist_L1L2 + T2_duration;
+ 	[R2T2_complete] R2_locale = 1 & T2_locale = 3 : dist_L1L3 + T2_duration;
+ 	[R2T2_complete] R2_locale = 1 & T2_locale = 4 : dist_L1L4 + T2_duration;
+ 	[R2T2_complete] R2_locale = 2 & T2_locale = 1 : dist_L2L1 + T2_duration;
+ 	[R2T2_complete] R2_locale = 2 & T2_locale = 2 : dist_L2L2 + T2_duration;
+ 	[R2T2_complete] R2_locale = 2 & T2_locale = 3 : dist_L2L3 + T2_duration;
+ 	[R2T2_complete] R2_locale = 2 & T2_locale = 4 : dist_L2L4 + T2_duration;
+ 	[R2T2_complete] R2_locale = 3 & T2_locale = 1 : dist_L3L1 + T2_duration;
+ 	[R2T2_complete] R2_locale = 3 & T2_locale = 2 : dist_L3L2 + T2_duration;
+ 	[R2T2_complete] R2_locale = 3 & T2_locale = 3 : dist_L3L3 + T2_duration;
+ 	[R2T2_complete] R2_locale = 3 & T2_locale = 4 : dist_L3L4 + T2_duration;
+ 	[R2T2_complete] R2_locale = 4 & T2_locale = 1 : dist_L4L1 + T2_duration;
+ 	[R2T2_complete] R2_locale = 4 & T2_locale = 2 : dist_L4L2 + T2_duration;
+ 	[R2T2_complete] R2_locale = 4 & T2_locale = 3 : dist_L4L3 + T2_duration;
+ 	[R2T2_complete] R2_locale = 4 & T1_locale = 4 : dist_L4L4 + T2_duration;
+
+ 	[R2_wait] true : 1;
+
+endrewards
+
+
+rewards "energy_expense"
+
+ 	[R1T1_complete] R1_locale = 1 & T1_locale = 1 : dist_L1L1 + T1_duration;
+ 	[R1T1_complete] R1_locale = 1 & T1_locale = 2 : dist_L1L2 + T1_duration;
+ 	[R1T1_complete] R1_locale = 1 & T1_locale = 3 : dist_L1L3 + T1_duration;
+ 	[R1T1_complete] R1_locale = 1 & T1_locale = 4 : dist_L1L4 + T1_duration;
+ 	[R1T1_complete] R1_locale = 2 & T1_locale = 1 : dist_L2L1 + T1_duration;
+ 	[R1T1_complete] R1_locale = 2 & T1_locale = 2 : dist_L2L2 + T1_duration;
+ 	[R1T1_complete] R1_locale = 2 & T1_locale = 3 : dist_L2L3 + T1_duration;
+ 	[R1T1_complete] R1_locale = 2 & T1_locale = 4 : dist_L2L4 + T1_duration;
+ 	[R1T1_complete] R1_locale = 3 & T1_locale = 1 : dist_L3L1 + T1_duration;
+ 	[R1T1_complete] R1_locale = 3 & T1_locale = 2 : dist_L3L2 + T1_duration;
+ 	[R1T1_complete] R1_locale = 3 & T1_locale = 3 : dist_L3L3 + T1_duration;
+ 	[R1T1_complete] R1_locale = 3 & T1_locale = 4 : dist_L3L4 + T1_duration;
+ 	[R1T1_complete] R1_locale = 4 & T1_locale = 1 : dist_L4L1 + T1_duration;
+ 	[R1T1_complete] R1_locale = 4 & T1_locale = 2 : dist_L4L2 + T1_duration;
+ 	[R1T1_complete] R1_locale = 4 & T1_locale = 3 : dist_L4L3 + T1_duration;
+ 	[R1T1_complete] R1_locale = 4 & T1_locale = 4 : dist_L4L4 + T1_duration;
+ 	[R1T2_complete] R1_locale = 1 & T2_locale = 1 : dist_L1L1 + T2_duration;
+ 	[R1T2_complete] R1_locale = 1 & T2_locale = 2 : dist_L1L2 + T2_duration;
+ 	[R1T2_complete] R1_locale = 1 & T2_locale = 3 : dist_L1L3 + T2_duration;
+ 	[R1T2_complete] R1_locale = 1 & T2_locale = 4 : dist_L1L4 + T2_duration;
+ 	[R1T2_complete] R1_locale = 2 & T2_locale = 1 : dist_L2L1 + T2_duration;
+ 	[R1T2_complete] R1_locale = 2 & T2_locale = 2 : dist_L2L2 + T2_duration;
+ 	[R1T2_complete] R1_locale = 2 & T2_locale = 3 : dist_L2L3 + T2_duration;
+ 	[R1T2_complete] R1_locale = 2 & T2_locale = 4 : dist_L2L4 + T2_duration;
+ 	[R1T2_complete] R1_locale = 3 & T2_locale = 1 : dist_L3L1 + T2_duration;
+ 	[R1T2_complete] R1_locale = 3 & T2_locale = 2 : dist_L3L2 + T2_duration;
+ 	[R1T2_complete] R1_locale = 3 & T2_locale = 3 : dist_L3L3 + T2_duration;
+ 	[R1T2_complete] R1_locale = 3 & T2_locale = 4 : dist_L3L4 + T2_duration;
+ 	[R1T2_complete] R1_locale = 4 & T2_locale = 1 : dist_L4L1 + T2_duration;
+ 	[R1T2_complete] R1_locale = 4 & T2_locale = 2 : dist_L4L2 + T2_duration;
+ 	[R1T2_complete] R1_locale = 4 & T2_locale = 3 : dist_L4L3 + T2_duration;
+ 	[R1T2_complete] R1_locale = 4 & T2_locale = 4 : dist_L4L4 + T2_duration;
+
+	[R2T1_complete] R2_locale = 1 & T1_locale = 1 : dist_L1L1 + T1_duration;
+ 	[R2T1_complete] R2_locale = 1 & T1_locale = 2 : dist_L1L2 + T1_duration;
+ 	[R2T1_complete] R2_locale = 1 & T1_locale = 3 : dist_L1L3 + T1_duration;
+ 	[R2T1_complete] R2_locale = 1 & T1_locale = 4 : dist_L1L4 + T1_duration;
+ 	[R2T1_complete] R2_locale = 2 & T1_locale = 1 : dist_L2L1 + T1_duration;
+ 	[R2T1_complete] R2_locale = 2 & T1_locale = 2 : dist_L2L2 + T1_duration;
+ 	[R2T1_complete] R2_locale = 2 & T1_locale = 3 : dist_L2L3 + T1_duration;
+ 	[R2T1_complete] R2_locale = 2 & T1_locale = 4 : dist_L2L4 + T1_duration;
+ 	[R2T1_complete] R2_locale = 3 & T1_locale = 1 : dist_L3L1 + T1_duration;
+ 	[R2T1_complete] R2_locale = 3 & T1_locale = 2 : dist_L3L2 + T1_duration;
+ 	[R2T1_complete] R2_locale = 3 & T1_locale = 3 : dist_L3L3 + T1_duration;
+ 	[R2T1_complete] R2_locale = 3 & T1_locale = 4 : dist_L3L4 + T1_duration;
+ 	[R2T1_complete] R2_locale = 4 & T1_locale = 1 : dist_L4L1 + T1_duration;
+ 	[R2T1_complete] R2_locale = 4 & T1_locale = 2 : dist_L4L2 + T1_duration;
+ 	[R2T1_complete] R2_locale = 4 & T1_locale = 3 : dist_L4L3 + T1_duration;
+ 	[R2T1_complete] R2_locale = 4 & T1_locale = 4 : dist_L4L4 + T1_duration;
+ 	[R2T2_complete] R2_locale = 1 & T2_locale = 1 : dist_L1L1 + T2_duration;
+ 	[R2T2_complete] R2_locale = 1 & T2_locale = 2 : dist_L1L2 + T2_duration;
+ 	[R2T2_complete] R2_locale = 1 & T2_locale = 3 : dist_L1L3 + T2_duration;
+ 	[R2T2_complete] R2_locale = 1 & T2_locale = 4 : dist_L1L4 + T2_duration;
+ 	[R2T2_complete] R2_locale = 2 & T2_locale = 1 : dist_L2L1 + T2_duration;
+ 	[R2T2_complete] R2_locale = 2 & T2_locale = 2 : dist_L2L2 + T2_duration;
+ 	[R2T2_complete] R2_locale = 2 & T2_locale = 3 : dist_L2L3 + T2_duration;
+ 	[R2T2_complete] R2_locale = 2 & T2_locale = 4 : dist_L2L4 + T2_duration;
+ 	[R2T2_complete] R2_locale = 3 & T2_locale = 1 : dist_L3L1 + T2_duration;
+ 	[R2T2_complete] R2_locale = 3 & T2_locale = 2 : dist_L3L2 + T2_duration;
+ 	[R2T2_complete] R2_locale = 3 & T2_locale = 3 : dist_L3L3 + T2_duration;
+ 	[R2T2_complete] R2_locale = 3 & T2_locale = 4 : dist_L3L4 + T2_duration;
+ 	[R2T2_complete] R2_locale = 4 & T2_locale = 1 : dist_L4L1 + T2_duration;
+ 	[R2T2_complete] R2_locale = 4 & T2_locale = 2 : dist_L4L2 + T2_duration;
+ 	[R2T2_complete] R2_locale = 4 & T2_locale = 3 : dist_L4L3 + T2_duration;
+ 	[R2T2_complete] R2_locale = 4 & T1_locale = 4 : dist_L4L4 + T2_duration;
+
+	[R1_wait] true : 1;
+	[R2_wait] true : 1;
+
+endrewards
+
+
