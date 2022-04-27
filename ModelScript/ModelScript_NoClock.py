@@ -2,58 +2,49 @@ import numpy as np
 import sys
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument("num_robots", type=int, help="Number of robots to be included in the model")
-parser.add_argument("num_tasks", type=int, help="Number of tasks to be included in the model")
-parser.add_argument("num_locales", type=int, help="Number of locales in the abstracted space")
-parser.add_argument("output_name", type=str, help="Filename for output")
-parser.add_argument("init_file", nargs = "?", const = None, type=str, help="Optional: file containing an init/endinit block with which to initialise variables")
-
-args = parser.parse_args();
-
-def Constants():
+def Constants(num_tasks, num_locales):
 
     obstacle_locations = []
     output = ""
 
-    for i in range(0, args.num_locales):
-        for j in range(0, args.num_locales):
+    for i in range(0, num_locales):
+        for j in range(0, num_locales):
             if(i==j):
                 continue
             output += f"const int dist_L{i}L{j} = {np.random.randint(1,5)};\n"
 
     output += "\n"
 
-    for i in range(0,args.num_tasks):
+    for i in range(0,num_tasks):
         output += f"const int T{i}_duration = {np.random.randint(1,5)};\n"
 
     output += "\n"
 
-    for i in range(0,args.num_tasks):        
-        output += f"const int T{i}_locale = {np.random.randint(1,args.num_locales+1)};\n"
+    for i in range(0,num_tasks):        
+        output += f"const int T{i}_locale = {np.random.randint(1,num_locales+1)};\n"
 
     return output
 
 
 # returns string representing robot
-def RobotModule(id):
+def RobotModule(id, num_tasks, num_locales):
     output = f"\n\n" + \
     f"module robot{id}\n\n" + \
-    f"\tR{id}_locale: [0..{args.num_locales}] init 0;\n"
-    for i in range(0, args.num_tasks):
-        output += f"\t[R{id}T{i}_complete] T{i}_active = true -> (R{id}_locale' = T{i}_locale);\n"
+    f"\tR{id}_locale: [0..{num_locales}] init 0;\n"
+    for i in range(0, num_tasks):
+        output += f"\t[R{id}T{i}_complete] R{id}_locale = 0 & T{i}_active = true -> (R{id}_locale' = T{i}_locale);\n"
 
     output += '''\n\nendmodule'''
 
     return output
 
 
-def TaskModule(id):
+def TaskModule(id, num_robots):
     output = f"\n\n" + \
     f"module task{id}\n\n" + \
     f"\tT{id}_active : bool init true;\n"
 
-    for i in range(0, args.num_robots):
+    for i in range(0, num_robots):
         output+=f"\t[R{i}T{id}_complete] true -> (T{id}_active' = false);\n"
 
 
@@ -62,13 +53,13 @@ def TaskModule(id):
     return output
 
 
-def Rewards():
+def Rewards(num_robots, num_tasks, num_locales):
     output = ""
-    for i in range(0, args.num_robots):
+    for i in range(0, num_robots):
         output += f"\n\nrewards \"rewards_R{i}\"\n\n"
-        for j in range(0, args.num_tasks):
-            for k in range(0, args.num_locales):
-                for l in range(0, args.num_locales):
+        for j in range(0, num_tasks):
+            for k in range(0, num_locales):
+                for l in range(0, num_locales):
 
                     if(k==l):
                         output += f"\t[R{i}T{j}_complete] R{i}_locale = {k} & T{j}_locale = {l} : T{j}_duration;\n"
@@ -77,44 +68,92 @@ def Rewards():
 
         output += "\nendrewards"
 
+
+    output += f"\n\nrewards \"team_reward\"\n\n"
+    for i in range(0, num_robots):
+        for j in range(0, num_tasks):
+            for k in range(0, num_locales):
+                for l in range(0, num_locales):
+
+                    if(k==l):
+                        output += f"\t[R{i}T{j}_complete] R{i}_locale = {k} & T{j}_locale = {l} : {np.random.randint(1,3)};\n"
+                    else:
+                        output += f"\t[R{i}T{j}_complete] R{i}_locale = {k} & T{j}_locale = {l} : {np.random.randint(1,3)};\n"
+
+    output += "\nendrewards"
+
+
     return output
 
 
-filename = args.output_name + ".prism"
+def CreateModelCode(num_robots, num_tasks, num_locales):
 
-print(f"Creating model file \'{filename}\'")
+    modelCode = "mdp\n"
 
-try:
-    f = open(filename, "x")
-except (FileExistsError):
-    chosen = False
-    while(chosen == False):
-        ans = input(f"File \'{filename}\' already exists, overwrite? y/n\n")
-        if(ans == "Y" or ans == "y"):
-            chosen = True;
+    modelCode += Constants(num_tasks, num_locales)
+
+    for i in range(0, num_robots):
+        modelCode+=RobotModule(i, num_tasks, num_locales)
+
+    for i in range(0, num_tasks):
+        modelCode+=TaskModule(i, num_robots)
+
+    modelCode+=Rewards(num_robots, num_tasks, num_locales)
+
+    return modelCode
+
+def CheckOverwrite(filename, overwriteByDefault = False):
+    
+    try:
+        f = open(filename, "x")
+    except (FileExistsError):
+        if(overwriteByDefault == True):
             print(f"Overwriting \'{filename}\'...")
-            f = open(args.output_name + ".prism", "w")
-        elif(ans == "N" or ans == "n"):
-            chosen = True 
-            print("Exiting.")
-            exit()
+            f = open(filename, "w")
 
-modelCode = "mdp\n"
+        else:
+            chosen = False
+            while(chosen == False):
+                ans = input(f"File \'{filename}\' already exists, overwrite? y/n\n")
+                if(ans == "Y" or ans == "y"):
+                    chosen = True;
+                    print(f"Overwriting \'{filename}\'...")
+                    #f = open(args.output_name + ".prism", "w")
+                elif(ans == "N" or ans == "n"):
+                    chosen = True 
+                    print("Exiting.")
+                    exit()
 
-modelCode += Constants()
+def WriteFile(filename, modelCode, num_robots, num_tasks, num_locales, bulk = False):
+    
+    f = open(filename, "w")
+    f.write(modelCode)
+    if(bulk == False):
+        print(f"Model {filename} created.\n{len(modelCode)} characters.\n")
+        print(f"Model parameters:\nLocales = {num_locales}\n"+\
+            f"Robots: {num_robots}\nTasks: {num_tasks}")
+#    if(init_file != None):
+#        print(f"Init file: {init_file}")
 
-for i in range(0, args.num_robots):
-    modelCode+=RobotModule(i)
 
-for i in range(0, args.num_tasks):
-    modelCode+=TaskModule(i)
+def main(output_name, num_robots, num_tasks, num_locales):
+    filename = f"{output_name}_{num_robots}_{num_tasks}_{num_locales}.prism"
 
-modelCode+=Rewards()
+    print(f"Creating model file \'{filename}\'")
 
+    CheckOverwrite(filename);
+    modelCode = CreateModelCode(num_robots, num_tasks, num_locales);
+    WriteFile(filename, modelCode, num_robots, num_tasks, num_locales)
 
-f.write(modelCode)
-print(f"Model {filename} created.\n{len(modelCode)} characters.\n")
-print(f"Model parameters:\nLocales = {args.num_locales}\n"+\
-    f"Robots: {args.num_robots}\nTasks: {args.num_tasks}")
-if(args.init_file != None):
-    print(f"Init file: {args.init_file}")
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("num_robots", type=int, help="Number of robots to be included in the model")
+    parser.add_argument("num_tasks", type=int, help="Number of tasks to be included in the model")
+    parser.add_argument("num_locales", type=int, help="Number of locales in the abstracted space")
+    parser.add_argument("output_name", type=str, help="Filename for output")
+    parser.add_argument("init_file", nargs = "?", const = None, type=str, help="Optional: file containing an init/endinit block with which to initialise variables")
+
+    args = parser.parse_args();
+
+    main(args.output_name, args.num_robots, args.num_tasks, args.num_locales)
