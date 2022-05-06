@@ -1,0 +1,135 @@
+mdp
+const int dist_L0L1 = 3;
+const int dist_L0L2 = 4;
+const int dist_L1L0 = 3;
+const int dist_L1L2 = 1;
+const int dist_L2L0 = 3;
+const int dist_L2L1 = 1;
+
+const int T0_duration = 2;
+const int T1_duration = 4;
+
+const int T0_locale = 1;
+const int T1_locale = 1;
+
+
+module robot0
+
+	R0_locale: [0..3] init 0;
+	[R0T0_complete] R0_locale = 0 & T0_active = true -> (R0_locale' = T0_locale);
+	[R0T1_complete] R0_locale = 0 & T1_active = true -> (R0_locale' = T1_locale);
+
+
+endmodule
+
+module robot1
+
+	R1_locale: [0..3] init 0;
+	[R1T0_complete] R1_locale = 0 & T0_active = true -> (R1_locale' = T0_locale);
+	[R1T1_complete] R1_locale = 0 & T1_active = true -> (R1_locale' = T1_locale);
+
+
+endmodule
+
+module task0
+
+	T0_active : bool init true;
+	[R0T0_complete] true -> (T0_active' = false);
+	[R1T0_complete] true -> (T0_active' = false);
+
+endmodule
+
+module task1
+
+	T1_active : bool init true;
+	[R0T1_complete] true -> (T1_active' = false);
+	[R1T1_complete] true -> (T1_active' = false);
+
+endmodule
+
+rewards "rewards_R0"
+
+	[R0T0_complete] R0_locale = 0 & T0_locale = 0 : T0_duration;
+	[R0T0_complete] R0_locale = 0 & T0_locale = 1 : dist_L0L1 + T0_duration;
+	[R0T0_complete] R0_locale = 0 & T0_locale = 2 : dist_L0L2 + T0_duration;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 0 : dist_L1L0 + T0_duration;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 1 : T0_duration;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 2 : dist_L1L2 + T0_duration;
+	[R0T0_complete] R0_locale = 2 & T0_locale = 0 : dist_L2L0 + T0_duration;
+	[R0T0_complete] R0_locale = 2 & T0_locale = 1 : dist_L2L1 + T0_duration;
+	[R0T0_complete] R0_locale = 2 & T0_locale = 2 : T0_duration;
+	[R0T1_complete] R0_locale = 0 & T1_locale = 0 : T1_duration;
+	[R0T1_complete] R0_locale = 0 & T1_locale = 1 : dist_L0L1 + T1_duration;
+	[R0T1_complete] R0_locale = 0 & T1_locale = 2 : dist_L0L2 + T1_duration;
+	[R0T1_complete] R0_locale = 1 & T1_locale = 0 : dist_L1L0 + T1_duration;
+	[R0T1_complete] R0_locale = 1 & T1_locale = 1 : T1_duration;
+	[R0T1_complete] R0_locale = 1 & T1_locale = 2 : dist_L1L2 + T1_duration;
+	[R0T1_complete] R0_locale = 2 & T1_locale = 0 : dist_L2L0 + T1_duration;
+	[R0T1_complete] R0_locale = 2 & T1_locale = 1 : dist_L2L1 + T1_duration;
+	[R0T1_complete] R0_locale = 2 & T1_locale = 2 : T1_duration;
+
+endrewards
+
+rewards "rewards_R1"
+
+	[R1T0_complete] R1_locale = 0 & T0_locale = 0 : T0_duration;
+	[R1T0_complete] R1_locale = 0 & T0_locale = 1 : dist_L0L1 + T0_duration;
+	[R1T0_complete] R1_locale = 0 & T0_locale = 2 : dist_L0L2 + T0_duration;
+	[R1T0_complete] R1_locale = 1 & T0_locale = 0 : dist_L1L0 + T0_duration;
+	[R1T0_complete] R1_locale = 1 & T0_locale = 1 : T0_duration;
+	[R1T0_complete] R1_locale = 1 & T0_locale = 2 : dist_L1L2 + T0_duration;
+	[R1T0_complete] R1_locale = 2 & T0_locale = 0 : dist_L2L0 + T0_duration;
+	[R1T0_complete] R1_locale = 2 & T0_locale = 1 : dist_L2L1 + T0_duration;
+	[R1T0_complete] R1_locale = 2 & T0_locale = 2 : T0_duration;
+	[R1T1_complete] R1_locale = 0 & T1_locale = 0 : T1_duration;
+	[R1T1_complete] R1_locale = 0 & T1_locale = 1 : dist_L0L1 + T1_duration;
+	[R1T1_complete] R1_locale = 0 & T1_locale = 2 : dist_L0L2 + T1_duration;
+	[R1T1_complete] R1_locale = 1 & T1_locale = 0 : dist_L1L0 + T1_duration;
+	[R1T1_complete] R1_locale = 1 & T1_locale = 1 : T1_duration;
+	[R1T1_complete] R1_locale = 1 & T1_locale = 2 : dist_L1L2 + T1_duration;
+	[R1T1_complete] R1_locale = 2 & T1_locale = 0 : dist_L2L0 + T1_duration;
+	[R1T1_complete] R1_locale = 2 & T1_locale = 1 : dist_L2L1 + T1_duration;
+	[R1T1_complete] R1_locale = 2 & T1_locale = 2 : T1_duration;
+
+endrewards
+
+rewards "team_reward"
+
+	[R0T0_complete] R0_locale = 0 & T0_locale = 0 : 1;
+	[R0T0_complete] R0_locale = 0 & T0_locale = 1 : 2;
+	[R0T0_complete] R0_locale = 0 & T0_locale = 2 : 2;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 0 : 1;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 1 : 2;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 2 : 2;
+	[R0T0_complete] R0_locale = 2 & T0_locale = 0 : 2;
+	[R0T0_complete] R0_locale = 2 & T0_locale = 1 : 2;
+	[R0T0_complete] R0_locale = 2 & T0_locale = 2 : 1;
+	[R0T1_complete] R0_locale = 0 & T1_locale = 0 : 2;
+	[R0T1_complete] R0_locale = 0 & T1_locale = 1 : 1;
+	[R0T1_complete] R0_locale = 0 & T1_locale = 2 : 2;
+	[R0T1_complete] R0_locale = 1 & T1_locale = 0 : 2;
+	[R0T1_complete] R0_locale = 1 & T1_locale = 1 : 1;
+	[R0T1_complete] R0_locale = 1 & T1_locale = 2 : 2;
+	[R0T1_complete] R0_locale = 2 & T1_locale = 0 : 1;
+	[R0T1_complete] R0_locale = 2 & T1_locale = 1 : 1;
+	[R0T1_complete] R0_locale = 2 & T1_locale = 2 : 1;
+	[R1T0_complete] R1_locale = 0 & T0_locale = 0 : 1;
+	[R1T0_complete] R1_locale = 0 & T0_locale = 1 : 2;
+	[R1T0_complete] R1_locale = 0 & T0_locale = 2 : 2;
+	[R1T0_complete] R1_locale = 1 & T0_locale = 0 : 2;
+	[R1T0_complete] R1_locale = 1 & T0_locale = 1 : 2;
+	[R1T0_complete] R1_locale = 1 & T0_locale = 2 : 1;
+	[R1T0_complete] R1_locale = 2 & T0_locale = 0 : 2;
+	[R1T0_complete] R1_locale = 2 & T0_locale = 1 : 1;
+	[R1T0_complete] R1_locale = 2 & T0_locale = 2 : 2;
+	[R1T1_complete] R1_locale = 0 & T1_locale = 0 : 2;
+	[R1T1_complete] R1_locale = 0 & T1_locale = 1 : 2;
+	[R1T1_complete] R1_locale = 0 & T1_locale = 2 : 1;
+	[R1T1_complete] R1_locale = 1 & T1_locale = 0 : 2;
+	[R1T1_complete] R1_locale = 1 & T1_locale = 1 : 1;
+	[R1T1_complete] R1_locale = 1 & T1_locale = 2 : 2;
+	[R1T1_complete] R1_locale = 2 & T1_locale = 0 : 2;
+	[R1T1_complete] R1_locale = 2 & T1_locale = 1 : 1;
+	[R1T1_complete] R1_locale = 2 & T1_locale = 2 : 2;
+
+endrewards

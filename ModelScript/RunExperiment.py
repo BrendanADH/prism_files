@@ -39,5 +39,5 @@ for i in range(0, reps):
 	times.append(t)
 	print(f"Time: {t}s (Expected remaining for experiment: {np.mean(times)* (reps - i)}s)\n")
 
-print(f"Times: {times}\nMean: {np.mean(times)}s\nSTD: {np.std(times)}s")
+print(f"Robots|Tasks|Locales: {params[0]} {params[1]} {params[2]}\nTimes: {times}\nMean | STD: {np.mean(times)} {np.std(times)}")
 
