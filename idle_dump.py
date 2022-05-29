@@ -3684,4 +3684,4 @@ TypeError: can only concatenate str (not "int") to str
 
 >>> output
 'R{"rewards_R0"}<=10 [C], R{"rewards_R1"}<=10 [C], R{"rewards_R2"}<=10 [C], R{"rewards_R3"}<=10 [C], R{"rewards_R4"}<=10 [C], R{"rewards_R5"}<=10 [C], '
->>> 
+>>> output = ""

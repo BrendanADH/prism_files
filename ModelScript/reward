@@ -1,0 +1,2 @@
+multi(R{"team_reward"}min=? [C], R{"rewards_R0"}<=8 [C], R{"rewards_R1"}<=8 [C], R{"rewards_R2"}<=8 [C], R{"rewards_R3"}<=8 [C], R{"rewards_R4"}<=8 [C], R{"rewards_R5"}<=8 [C], R{"rewards_R6"}<=8 [C])
+

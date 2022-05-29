@@ -2,7 +2,8 @@ import numpy as np
 import subprocess
 import argparse
 
-import ModelScript_NoClock as script
+import ModelScript_NoClock as modelGen
+import Partitioning as part
 
 parser = argparse.ArgumentParser()
 
@@ -22,13 +23,14 @@ reps, fnb, params = args.num_repetitions, args.filename_base, args.parameters
 
 print(f"Experiment parameters: {reps} {fnb} {params}\n")
 times= []
+results = []
 
 for i in range(0, reps):
 	print(f"Iteration {i}:")
-	modelCode = script.CreateModelCode(*params);
+	modelCode = modelGen.CreateModelCode(*params);
 	filename = f"{fnb}_{i}.prism"
 	print("Creating Model...")
-	script.WriteFile(filename, modelCode, *params, bulk = True)
+	modelGen.WriteFile(filename, modelCode, *params, bulk = True)
 	print("Running PRISM...")
 	output = subprocess.run(["prism", filename, "-pf",  args.prism_args], capture_output = True).stdout
 	
@@ -37,7 +39,13 @@ for i in range(0, reps):
 	text_e_index = output.find("seconds.", text_b_index, len(output))
 	t = float(output[text_b_index+len("Time for model checking:"):text_e_index])
 	times.append(t)
-	print(f"Time: {t}s (Expected remaining for experiment: {np.mean(times)* (reps - i)}s)\n")
 
-print(f"Robots|Tasks|Locales: {params[0]} {params[1]} {params[2]}\nTimes: {times}\nMean | STD: {np.mean(times)} {np.std(times)}")
+	text_b_index = output.find("Value in the initial state:")
+	text_e_index = output.find("Time for model checking:")
+	r = float((output[text_b_index+len("Value in the initial state:"):text_e_index-4]))
+	results.append(r)
+
+	print(f"Result: {r}\nTime: {t}s (Expected remaining for experiment: {np.mean(times)* (reps - i)}s)\n")
+
+print(f"Robots|Tasks|Locales: {params[0]} {params[1]} {params[2]}\nTimes: {times}\nMean | STD: {np.mean(times)} {np.std(times)}\nResults: {results}\nMean | STD: {np.mean(results)} {np.std(results)}")
 

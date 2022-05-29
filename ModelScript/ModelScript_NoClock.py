@@ -7,16 +7,19 @@ def Constants(num_tasks, num_locales):
     obstacle_locations = []
     output = ""
 
-    for i in range(0, num_locales):
-        for j in range(0, num_locales):
+    for i in range(0, num_locales+1):
+        for j in range(0, num_locales+1):
             if(i==j):
                 continue
-            output += f"const int dist_L{i}L{j} = {np.random.randint(1,5)};\n"
+            if(i == 0 or j == 0):
+                output += f"const int dist_L{i}L{j} = 8;\n" # 8 cost to enter system
+            else:
+                output += f"const int dist_L{i}L{j} = {np.random.randint(1,3)};\n"
 
     output += "\n"
 
     for i in range(0,num_tasks):
-        output += f"const int T{i}_duration = {np.random.randint(1,5)};\n"
+        output += f"const int T{i}_duration = {np.random.randint(1,3)};\n"
 
     output += "\n"
 
@@ -32,7 +35,7 @@ def RobotModule(id, num_tasks, num_locales):
     f"module robot{id}\n\n" + \
     f"\tR{id}_locale: [0..{num_locales}] init 0;\n"
     for i in range(0, num_tasks):
-        output += f"\t[R{id}T{i}_complete] R{id}_locale = 0 & T{i}_active = true -> (R{id}_locale' = T{i}_locale);\n"
+            output += f"\t[R{id}T{i}_complete] T{i}_active = true -> (R{id}_locale' = T{i}_locale);\n"
 
     output += '''\n\nendmodule'''
 
@@ -58,8 +61,8 @@ def Rewards(num_robots, num_tasks, num_locales):
     for i in range(0, num_robots):
         output += f"\n\nrewards \"rewards_R{i}\"\n\n"
         for j in range(0, num_tasks):
-            for k in range(0, num_locales):
-                for l in range(0, num_locales):
+            for k in range(0, num_locales+1):
+                for l in range(0, num_locales+1):
 
                     if(k==l):
                         output += f"\t[R{i}T{j}_complete] R{i}_locale = {k} & T{j}_locale = {l} : T{j}_duration;\n"
@@ -72,15 +75,21 @@ def Rewards(num_robots, num_tasks, num_locales):
     output += f"\n\nrewards \"team_reward\"\n\n"
     for i in range(0, num_robots):
         for j in range(0, num_tasks):
-            for k in range(0, num_locales):
-                for l in range(0, num_locales):
+            for k in range(0, num_locales+1):
+                for l in range(0, num_locales+1):
 
                     if(k==l):
-                        output += f"\t[R{i}T{j}_complete] R{i}_locale = {k} & T{j}_locale = {l} : {np.random.randint(1,3)};\n"
+                        output += f"\t[R{i}T{j}_complete] R{i}_locale = {k} & T{j}_locale = {l} : T{j}_duration;\n"
                     else:
-                        output += f"\t[R{i}T{j}_complete] R{i}_locale = {k} & T{j}_locale = {l} : {np.random.randint(1,3)};\n"
+                        output += f"\t[R{i}T{j}_complete] R{i}_locale = {k} & T{j}_locale = {l} : dist_L{k}L{l} + T{j}_duration;\n"
 
     output += "\nendrewards"
+
+    # for i in range(0, num_tasks):
+    #     output += f"\n\nrewards \"T{i}_completion\"\n\n"
+    #     for j in range(0, num_robots):
+    #         output+=f"\t[R{j}T{i}_complete] true : 1;\n"
+    #     output += "\nendrewards"
 
 
     return output
