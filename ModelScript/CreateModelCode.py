@@ -5,7 +5,7 @@ def WriteFile(filename, modelCode):
 	f = open(filename, "w")
 	f.write(modelCode)
 
-def CreateModel(locale_points, tasks_per_locale):
+def CreateModelCode(locale_points, tasks_per_locale):
 
 	num_tasks = int(np.sum(tasks_per_locale))
 
@@ -19,8 +19,7 @@ def CreateModel(locale_points, tasks_per_locale):
 		output += TaskModule(i, num_tasks)
 	output += Rewards(num_tasks, len(locale_points)+1)
 
-
-	WriteFile("testing_partition", output)
+return modelCode
 
 def Constants(locale_points, tasks_per_locale):
 

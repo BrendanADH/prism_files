@@ -1,0 +1,17 @@
+mdp
+
+const int dist_L0L1 = 5000;
+const int dist_L1L0 = 5000;
+const int dist_L0L2 = 5000;
+const int dist_L2L0 = 5000;
+
+const int dist_L1L2 = 6636;
+const int dist_L2L1 = 6636;
+
+
+
+
+rewards "team_reward"
+
+
+endrewards

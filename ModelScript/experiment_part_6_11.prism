@@ -1,0 +1,43 @@
+mdp
+
+const int dist_L0L1 = 5000;
+const int dist_L1L0 = 5000;
+
+
+const int T0_duration = 3000;
+
+const int T0_locale = 1;
+
+
+module robot0
+
+	R0_locale: [0..2] init 0;
+	[R0T0_complete] T0_active = true -> (R0_locale' = T0_locale);
+
+
+endmodule
+
+module task0
+
+	T0_active : bool init true;
+	[R0T0_complete] true -> (T0_active' = false);
+
+endmodule
+
+rewards "rewards_R0"
+
+	[R0T0_complete] R0_locale = 0 & T0_locale = 0 : T0_duration;
+	[R0T0_complete] R0_locale = 0 & T0_locale = 1 : dist_L0L1 + T0_duration;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 0 : dist_L1L0 + T0_duration;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 1 : T0_duration;
+
+endrewards
+
+rewards "team_reward"
+
+	[R0T0_complete] R0_locale = 0 & T0_locale = 0 : T0_duration;
+	[R0T0_complete] R0_locale = 0 & T0_locale = 1 : dist_L0L1 + T0_duration;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 0 : dist_L1L0 + T0_duration;
+	[R0T0_complete] R0_locale = 1 & T0_locale = 1 : T0_duration;
+
+endrewards

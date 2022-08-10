@@ -2,7 +2,7 @@ import numpy as np
 import subprocess
 import argparse
 
-import ModelScript_NoClock as modelGen
+import ModelScript_NTNR as modelGen
 import Partitioning as part
 
 parser = argparse.ArgumentParser()
@@ -48,4 +48,5 @@ for i in range(0, reps):
 	print(f"Result: {r}\nTime: {t}s (Expected remaining for experiment: {np.mean(times)* (reps - i)}s)\n")
 
 print(f"Robots|Tasks|Locales: {params[0]} {params[1]} {params[2]}\nTimes: {times}\nMean | STD: {np.mean(times)} {np.std(times)}\nResults: {results}\nMean | STD: {np.mean(results)} {np.std(results)}")
+print(f"Formatted:\n{np.mean(times)} {np.std(times)} {np.mean(results)} {np.std(results)}")
 
